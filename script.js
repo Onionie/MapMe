@@ -6,7 +6,6 @@ require([
   "esri/Graphic",
   "esri/widgets/Locate",
   "esri/widgets/BasemapToggle",
-  "esri/widgets/BasemapGallery",
 ], function (
   esriConfig,
   Map,
@@ -14,8 +13,7 @@ require([
   locator,
   Graphic,
   Locate,
-  BasemapToggle,
-  BasemapGallery
+  BasemapToggle
 ) {
   //prettier-ignore
   esriConfig.apiKey ="AAPK8901ebc02b514937915f81d78ec61b7fStC7-kmQA7QW0y3Ddu1E7ZvmwKgCxO96JJ9Mbu83t21pWiR8a_K3930gRi0EMXqg";
@@ -26,7 +24,7 @@ require([
 
   const view = new MapView({
     map: map,
-    center: [-117.1803488, 34.1261445], // Longitude, latitude
+    center: [-117.1827978, 34.0588218], // Longitude, latitude
     zoom: 13, // Zoom level
     container: "viewDiv", // Div element
   });
@@ -43,6 +41,7 @@ require([
     view: view,
     useHeadingEnabled: false,
     goToOverride: function (view, options) {
+      view.graphics.removeAll();
       options.target.scale = 30000;
       return view.goTo(options.target);
     },
@@ -53,11 +52,12 @@ require([
 
   const places = [
     "Choose a place type...",
-    "Parks and Outdoors",
+    "Cinema",
     "Coffee shop",
-    "Gas station",
     "Food",
+    "Gas station",
     "Hotel",
+    "Parks and Outdoors",
   ];
 
   const select = document.createElement("select", "");
@@ -85,7 +85,7 @@ require([
       .addressToLocations(locatorUrl, {
         location: pt,
         categories: [category],
-        maxLocations: 25,
+        maxLocations: 50,
         outFields: ["Place_addr", "PlaceName"],
       })
 
@@ -100,7 +100,7 @@ require([
               geometry: result.location, // Point returned
               symbol: {
                 type: "simple-marker",
-                color: "#000000",
+                color: "green",
                 size: "12px",
                 outline: {
                   color: "#ffffff",
