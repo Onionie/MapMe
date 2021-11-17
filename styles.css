@@ -6,3 +6,8 @@ body,
   height: 100%;
   width: 100%;
 }
+
+input {
+  height: 30px;
+  font-size: 15px;
+}

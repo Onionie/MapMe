@@ -29,6 +29,21 @@ require([
     container: "viewDiv", // Div element
   });
 
+  /*--------------Locate Me Feature--------------*/
+  //Locate feature
+  const locate = new Locate({
+    view: view,
+    useHeadingEnabled: false,
+    goToOverride: function (view, options) {
+      options.target.scale = 1500;
+      return view.goTo(options.target);
+    },
+  });
+
+  //Position Locate feature top left
+  view.ui.add(locate, "top-left");
+
+  /*--------------Change Basemap Layer Feature--------------*/
   //Basemap Layer Feature
   const basemapToggle = new BasemapToggle({
     view: view,
@@ -36,46 +51,7 @@ require([
   });
   view.ui.add(basemapToggle, "bottom-right");
 
-  //Locate feature
-  const locate = new Locate({
-    view: view,
-    useHeadingEnabled: false,
-    goToOverride: function (view, options) {
-      view.graphics.removeAll();
-      options.target.scale = 30000;
-      return view.goTo(options.target);
-    },
-  });
-
-  //Position feature top left
-  view.ui.add(locate, "top-left");
-
-  const places = [
-    "Choose a place type...",
-    "Cinema",
-    "Coffee shop",
-    "Food",
-    "Gas station",
-    "Hotel",
-    "Parks and Outdoors",
-  ];
-
-  const select = document.createElement("select", "");
-  select.setAttribute("class", "esri-widget esri-select");
-  select.setAttribute(
-    "style",
-    "width: 175px; font-family: 'Avenir Next W00'; font-size: 1em"
-  );
-
-  places.forEach(function (p) {
-    const option = document.createElement("option");
-    option.value = p;
-    option.innerHTML = p;
-    select.appendChild(option);
-  });
-
-  view.ui.add(select, "top-right");
-
+  /*--------------Find Places Feature--------------*/
   //prettier-ignore
   const locatorUrl ="http://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer";
 
@@ -92,7 +68,6 @@ require([
       .then(function (results) {
         view.popup.close();
         view.graphics.removeAll();
-
         results.forEach(function (result) {
           view.graphics.add(
             new Graphic({
@@ -118,15 +93,25 @@ require([
       });
   }
 
-  // Search for places in center of map
+  //custom form / search box
+  const form = document.getElementById("form");
+  const input = document.getElementById("search");
+
+  //on submit, call findPlaces function and pass in value
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    findPlaces(input.value, view.center);
+  });
+
+  //Put Search box on top right
+  view.ui.add(form, "top-right");
+
+  //Search for places in center of map
   view.watch("stationary", function (val) {
     if (val) {
-      findPlaces(select.value, view.center);
+      findPlaces(input.value, view.center);
     }
   });
 
-  // Listen for category changes and find places
-  select.addEventListener("change", function (event) {
-    findPlaces(event.target.value, view.center);
-  });
+  /*--------------Locate Me Feature--------------*/
 }); //End of require
