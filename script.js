@@ -1,8 +1,8 @@
-setTimeout(function () {
-  alert(`- To pinpoint current location: Click on target button on top left of the screen.
-- Search for a Type of Place: You can search for type of places on top right search bar.
-- To switch map layer : Click on the bottom right corner of the screen. `);
-}, 6000);
+// setTimeout(function () {
+//   alert(`- To pinpoint current location: Click on target button on top left of the screen.
+// - Search for a Type of Place: You can search for type of places on top right search bar.
+// - To switch map layer : Click on the bottom right corner of the screen. `);
+// }, 6000);
 require([
   "esri/config",
   "esri/Map",
