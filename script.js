@@ -1,19 +1,33 @@
+setTimeout(function () {
+  alert(`- To pinpoint current location: Click on target button on top left of the screen.
+- Search for a place: You can search for type of places on top right search bar.
+- To get route and directions : Click an origin point in the map and a destination point.
+- `);
+}, 6000);
 require([
   "esri/config",
   "esri/Map",
   "esri/views/MapView",
   "esri/rest/locator",
-  "esri/Graphic",
   "esri/widgets/Locate",
   "esri/widgets/BasemapToggle",
+  "esri/Graphic",
+  "esri/rest/route",
+  "esri/rest/support/RouteParameters",
+  "esri/rest/support/FeatureSet",
+  "esri/widgets/Search",
 ], function (
   esriConfig,
   Map,
   MapView,
   locator,
-  Graphic,
   Locate,
-  BasemapToggle
+  BasemapToggle,
+  Graphic,
+  route,
+  RouteParameters,
+  FeatureSet,
+  Search
 ) {
   //prettier-ignore
   esriConfig.apiKey ="AAPK8901ebc02b514937915f81d78ec61b7fStC7-kmQA7QW0y3Ddu1E7ZvmwKgCxO96JJ9Mbu83t21pWiR8a_K3930gRi0EMXqg";
@@ -25,9 +39,19 @@ require([
   const view = new MapView({
     map: map,
     center: [-117.1827978, 34.0588218], // Longitude, latitude
-    zoom: 13, // Zoom level
+    zoom: 16, // Zoom level
     container: "viewDiv", // Div element
   });
+
+  // const search = new Search({
+  //   //Add Search widget
+  //   view: view,
+  //   goToOverride: function (view, options) {
+  //     options.target.scale = 000;
+  //     return view.goTo(options.target);
+  //   },
+  // });
+  // view.ui.add(search, "top-right"); //Add to the map
 
   /*--------------Locate Me Feature--------------*/
   //Locate feature
@@ -55,13 +79,13 @@ require([
   //prettier-ignore
   const locatorUrl ="http://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer";
 
-  // Find places and add them to the map
+  //Find places and add them to the map
   function findPlaces(category, pt) {
     locator
       .addressToLocations(locatorUrl, {
         location: pt,
         categories: [category],
-        maxLocations: 50,
+        maxLocations: 99,
         outFields: ["Place_addr", "PlaceName"],
       })
 
@@ -113,5 +137,87 @@ require([
     }
   });
 
-  /*--------------Locate Me Feature--------------*/
+  /*--------------Route Me Feature--------------*/
+
+  //prettier-ignore
+  const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
+
+  view.on("click", function (event) {
+    if (view.graphics.length === 0) {
+      addGraphic("origin", event.mapPoint);
+      console.log(event);
+    } else if (view.graphics.length === 1) {
+      addGraphic("destination", event.mapPoint);
+
+      getRoute(); // Call the route service
+    } else {
+      view.graphics.removeAll();
+      addGraphic("origin", event.mapPoint);
+    }
+  });
+
+  //Display White Marker on origin point
+  function addGraphic(type, point) {
+    const graphic = new Graphic({
+      symbol: {
+        type: "simple-marker",
+        color: type === "origin" ? "white" : "black",
+        size: "8px",
+      },
+      geometry: point,
+    });
+    view.graphics.add(graphic);
+  }
+
+  //Find Route
+  function getRoute() {
+    const routeParams = new RouteParameters({
+      stops: new FeatureSet({
+        features: view.graphics.toArray(),
+      }),
+      returnDirections: true,
+    });
+
+    //Solve Method to get route
+    route
+      .solve(routeUrl, routeParams)
+      .then(function (data) {
+        data.routeResults.forEach(function (result) {
+          console.log(data);
+          result.route.symbol = {
+            type: "simple-line",
+            color: [5, 150, 255],
+            width: 3,
+          };
+          view.graphics.add(result.route);
+        });
+
+        // Display directions
+        if (data.routeResults.length > 0) {
+          const directions = document.createElement("ol");
+          directions.classList =
+            "esri-widget esri-widget--panel esri-directions__scroller";
+          directions.style.marginTop = "0";
+          directions.style.padding = "15px 15px 15px 30px";
+          const features = data.routeResults[0].directions.features;
+          console.log(features);
+
+          // Show each direction
+          features.forEach(function (result, i) {
+            const direction = document.createElement("li");
+            direction.innerHTML =
+              result.attributes.text +
+              " (" +
+              result.attributes.length.toFixed(2) +
+              " miles)";
+            directions.appendChild(direction);
+          });
+          view.ui.empty("bottom-left");
+          view.ui.add(directions, "bottom-left");
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
 }); //End of require
