@@ -9,5 +9,6 @@ body,
 
 input {
   height: 30px;
+  width: 300px;
   font-size: 15px;
 }

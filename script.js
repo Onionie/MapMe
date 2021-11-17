@@ -1,8 +1,7 @@
 setTimeout(function () {
   alert(`- To pinpoint current location: Click on target button on top left of the screen.
-- Search for a place: You can search for type of places on top right search bar.
-- To get route and directions : Click an origin point in the map and a destination point.
-- `);
+- Search for a Type of Place: You can search for type of places on top right search bar.
+- To switch map layer : Click on the bottom right corner of the screen. `);
 }, 6000);
 require([
   "esri/config",
@@ -85,7 +84,7 @@ require([
       .addressToLocations(locatorUrl, {
         location: pt,
         categories: [category],
-        maxLocations: 99,
+        maxLocations: 50,
         outFields: ["Place_addr", "PlaceName"],
       })
 
@@ -108,8 +107,17 @@ require([
               },
 
               popupTemplate: {
-                title: "{PlaceName}", // Data attribute names
-                content: "{Place_addr}",
+                title: "{PlaceName}",
+                content:
+                  "{Place_addr}" +
+                  "<br><br>" +
+                  result.location.x.toFixed(5) +
+                  "," +
+                  result.location.y.toFixed(5),
+              },
+              goToOverride: function (view, options) {
+                options.target.scale = 5000;
+                return view.goTo(options.target);
               },
             })
           );
@@ -138,7 +146,8 @@ require([
   });
 
   /*--------------Route Me Feature--------------*/
-
+  /*
+  Conflicts with other markers graphics because of view.graphics.removeAll();
   //prettier-ignore
   const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
 
@@ -219,5 +228,5 @@ require([
       .catch(function (error) {
         console.log(error);
       });
-  }
+  }*/
 }); //End of require
