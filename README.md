@@ -16,3 +16,4 @@ https://onionie.github.io/MapMe/
 # Screenshot
 
 <img src = "https://github.com/Onionie/MapMe/blob/main/Screenshot/1.PNG">
+<img src = "https://github.com/Onionie/MapMe/blob/main/Screenshot/2.PNG">
