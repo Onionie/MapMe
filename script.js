@@ -90,7 +90,7 @@ require([
 
       .then(function (results) {
         view.popup.close();
-        view.graphics.removeAll();
+        view.graphics.removeAll(); //Removes existing added graphics on the map
         results.forEach(function (result) {
           view.graphics.add(
             new Graphic({
@@ -139,6 +139,7 @@ require([
   view.ui.add(form, "top-right");
 
   //Search for places in center of map
+  //When there's a change on the map, calls findPlaces() again
   view.watch("stationary", function (val) {
     if (val) {
       findPlaces(input.value, view.center);
